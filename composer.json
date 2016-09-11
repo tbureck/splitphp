@@ -1,0 +1,25 @@
+{
+    "name": "tbureck/splitphp",
+    "type": "project",
+    "description": "SplitPHP splits monolithic repositories into multiple repositories using splitsh-lite.",
+
+    "license": "MIT",
+
+    "minimum-stability": "stable",
+
+    "autoload": {
+        "psr-4": {
+            "TBureck\\SplitPhp\\": "src/"
+        }
+    },
+
+    "bin": [
+        "bin/splitphp"
+    ],
+
+    "require": {
+        "php": "^5.6.0|^7.0",
+
+        "symfony/console": "~3.1.3"
+    }
+}
