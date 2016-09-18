@@ -45,8 +45,10 @@ class SplitCommand extends Command
 
         // Change to the given branch:
         $theBranch = $targetBranch = $input->getArgument('branch');
-        if (strpos('refs/heads/', $theBranch) === 0) {
+        if (strpos('refs/heads/', $theBranch) !== 0) {
             $targetBranch = 'refs/heads/' . $theBranch;
+        } else {
+            $theBranch = substr($theBranch, 11);
         }
 
         exec(sprintf('git checkout %s', $theBranch));
