@@ -47,7 +47,7 @@ class SplitCommand extends Command
 
         // Change to the given branch:
         $theBranch = $targetBranch = $input->getArgument('branch');
-        if (strpos('refs/heads/', $theBranch) !== 0) {
+        if (strpos($theBranch, 'refs/heads/') !== 0) {
             $targetBranch = 'refs/heads/' . $theBranch;
         } else {
             $theBranch = substr($theBranch, 11);
