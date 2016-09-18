@@ -77,8 +77,8 @@ class SplitCommand extends Command
 
             // Assemble prefix options for splitsh:
             $prefixOptions = '';
-            foreach ($subTreeConfiguration['prefixes'] as $srcDir => $targetDir) {
-                $prefixOptions .= sprintf('--prefix=%s:%s ', $srcDir, $targetDir ?: '.');
+            foreach ($subTreeConfiguration['prefixes'] as $prefix) {
+                $prefixOptions .= sprintf('--prefix=%s:%s ', $prefix['key'], $prefix['value'] ?: '.');
             }
 
             $output->writeln(sprintf('  Splitting prefixes: %s', $prefixOptions), OutputInterface::VERBOSITY_VERY_VERBOSE);
