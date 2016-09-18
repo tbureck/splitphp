@@ -16,3 +16,4 @@ foreach ($autoloadFiles as $autoloadFile) {
 // ..., the application and run it:
 $application = new \TBureck\SplitPhp\Application();
 $application->run();
+
