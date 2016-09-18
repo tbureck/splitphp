@@ -44,7 +44,11 @@ class SplitCommand extends Command
         }
 
         // Change to the given branch:
-        $theBranch = $input->getArgument('branch');
+        $theBranch = $targetBranch = $input->getArgument('branch');
+        if (strpos('refs/heads/', $theBranch) === 0) {
+            $targetBranch = 'refs/heads/' . $theBranch;
+        }
+
         exec(sprintf('git checkout %s', $theBranch));
 
         $configuration = json_decode(file_get_contents($configFile), true);
@@ -52,7 +56,7 @@ class SplitCommand extends Command
         foreach ($configuration as $subTreeName => $subTreeConfiguration) {
             // First check for the branch. If the current commit was made in one of $subTreeConfiguration['branches'], go on:
             if (!in_array($theBranch, $subTreeConfiguration['branches'])) {
-                $output->writeln('<info>Skipped subtree "%s", because of branch configuration.</info>', OutputInterface::VERBOSITY_VERBOSE);
+                $output->writeln(sprintf('<info>Skipped subtree "%s", because of branch configuration.</info>', $theBranch), OutputInterface::VERBOSITY_VERBOSE);
                 continue;
             }
 
@@ -67,7 +71,7 @@ class SplitCommand extends Command
 
             // Checkout the splitted branch and push it to the configured remote end:
             exec(sprintf('git checkout %s', $subTreeName));
-            exec(sprintf('git push %s %s:refs/heads/%s', $subTreeConfiguration['target'], $theBranch, $theBranch));
+            exec(sprintf('git push %s %s:%s', $subTreeConfiguration['target'], $subTreeName, $targetBranch));
 
             // Finally, change back to the source branch:
             exec(sprintf('git checkout %s', $theBranch));
