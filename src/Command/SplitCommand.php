@@ -46,14 +46,14 @@ class SplitCommand extends Command
         $output->writeln(sprintf('Using configuration file "%s".', $configFile), OutputInterface::VERBOSITY_VERBOSE);
 
         // Change to the given branch:
-        $theBranch = $targetBranch = $input->getArgument('branch');
+        $theBranch = $sourceBranch = $input->getArgument('branch');
         if (strpos($theBranch, 'refs/heads/') !== 0) {
-            $targetBranch = 'refs/heads/' . $theBranch;
+            $sourceBranch = 'refs/heads/' . $theBranch;
         } else {
             $theBranch = substr($theBranch, 11);
         }
 
-        $output->writeln(sprintf('Splitting from branch "%s" (%s)...', $theBranch, $targetBranch), OutputInterface::VERBOSITY_VERBOSE);
+        $output->writeln(sprintf('Splitting from branch "%s" (%s)...', $theBranch, $sourceBranch), OutputInterface::VERBOSITY_VERBOSE);
 
         exec(sprintf('git checkout %s', $theBranch));
 
@@ -62,8 +62,6 @@ class SplitCommand extends Command
 
         if (!count($configuration)) {
             $output->writeln('Configuration is empty.');
-
-            var_dump($configuration);
         }
 
         foreach ($configuration as $subTreeName => $subTreeConfiguration) {
@@ -78,20 +76,26 @@ class SplitCommand extends Command
             // Assemble prefix options for splitsh:
             $prefixOptions = '';
             foreach ($subTreeConfiguration['prefixes'] as $prefix) {
-                $prefixOptions .= sprintf('--prefix=%s:%s ', $prefix['key'], $prefix['value'] ?: '.');
+                if (!array_key_exists('value', $prefix) || !$prefix['value']) {
+                    $prefixOptions .= sprintf('--prefix=%s ', $prefix['key']);
+                } else {
+                    $prefixOptions .= sprintf('--prefix=%s:%s ', $prefix['key'], $prefix['value'] ?: '.');
+                }
             }
+
+            $targetBranch = sprintf('split/%s', $subTreeName);
 
             $output->writeln(sprintf('  Splitting prefixes: %s', $prefixOptions), OutputInterface::VERBOSITY_VERY_VERBOSE);
 
             // Split action :)
-            exec(sprintf('splitsh-lite %s --target=%s', $prefixOptions, $subTreeName));
+            exec(sprintf('splitsh-lite %s --target=%s', $prefixOptions, $targetBranch));
 
-            $output->writeln(sprintf('  Checking out splitted branch "%s"...', $subTreeName), OutputInterface::VERBOSITY_VERY_VERBOSE);
+            $output->writeln(sprintf('  Checking out splitted branch "%s"...', $targetBranch), OutputInterface::VERBOSITY_VERY_VERBOSE);
 
             // Checkout the splitted branch and push it to the configured remote end:
-            exec(sprintf('git checkout %s', $subTreeName));
+            exec(sprintf('git checkout %s', $targetBranch));
             $output->writeln(sprintf('  Pushing changes to "%s"...', $subTreeConfiguration['target']), OutputInterface::VERBOSITY_VERY_VERBOSE);
-            exec(sprintf('git push %s %s:%s', $subTreeConfiguration['target'], $subTreeName, $targetBranch));
+            exec(sprintf('git push %s %s:%s', $subTreeConfiguration['target'], $targetBranch, $sourceBranch));
 
             $output->writeln('...done!', OutputInterface::VERBOSITY_VERBOSE);
             // Finally, change back to the source branch:
