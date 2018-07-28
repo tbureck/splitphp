@@ -62,6 +62,12 @@ class SplitCommand extends Command
 
         if (!count($configuration)) {
             $output->writeln('Configuration is empty.');
+        } elseif ($output->getVerbosity() === OutputInterface::VERBOSITY_DEBUG) {
+            $output->writeln('Configuration read:');
+
+            foreach ($configuration as $key => $cfg) {
+                $output->writeln(sprintf('  %s: %s', $key, $cfg['target']));
+            }
         }
 
         foreach ($configuration as $subTreeName => $subTreeConfiguration) {
